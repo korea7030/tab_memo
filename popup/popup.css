@@ -1,0 +1,231 @@
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background-color: #f5f5f5;
+}
+
+.container {
+  width: 320px;
+  padding: 12px;
+}
+
+/* 타이틀 */
+h1 {
+  font-size: 18px;
+  margin-bottom: 10px;
+}
+
+h2 {
+  font-size: 15px;
+  margin: 10px 0 6px;
+}
+
+/* 검색창 */
+.search-bar {
+  width: 100%;
+  padding: 8px;
+  margin: 6px 0 10px 0;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+/* 필터 */
+.filter-bar {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.filter-btn {
+  flex: 1;
+  padding: 6px 0;
+  border: none;
+  border-radius: 6px;
+  background: #e5e7eb;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.filter-btn.active {
+  background: #2563eb;
+  color: white;
+}
+
+/* 공통 버튼 */
+.default-btn {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  margin-bottom: 10px;
+  background-color: #2563eb;
+  color: white;
+  font-size: 14px;
+}
+
+.default-btn:hover {
+  background-color: #1d4ed8;
+}
+
+/* 세트 리스트 */
+.sets-list {
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+/* 카드 */
+.set-item {
+  background: white;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  transition: 0.15s ease;
+  cursor: pointer;
+  border-left: 4px solid transparent;
+}
+
+.set-item:hover {
+  background: #fafafa;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+}
+
+/* 카테고리별 라인 */
+.set-item.category-업무 { border-left-color: #2563eb; }
+.set-item.category-개인 { border-left-color: #10b981; }
+.set-item.category-기타 { border-left-color: #6b7280; }
+
+/* 카드 헤더 */
+.set-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.set-item-left {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+/* 삭제 */
+.delete-btn {
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  color: #888;
+}
+
+.delete-btn:hover {
+  color: #d11;
+}
+
+/* 제목 */
+.set-item-title {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* 메모 */
+.set-item-memo-inline {
+  font-size: 13px;
+  color: #444;
+}
+
+.set-item-memo-inline.empty {
+  color: #aaaaaa;
+}
+
+/* 날짜 */
+.set-item-date {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* 카테고리 태그 */
+.set-item-category {
+  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+  gap: 4px;
+}
+
+.category-업무 { background-color: #2563eb; }
+.category-개인 { background-color: #10b981; }
+.category-기타 { background-color: #6b7280; }
+
+.category-업무::before { content: "💼"; }
+.category-개인::before { content: "🎧"; }
+.category-기타::before { content: "📦"; }
+
+/* 상세 보기 */
+.detail-view {
+  padding: 12px;
+}
+
+.hidden { display: none; }
+
+.back-btn {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+/* 상세 헤더 */
+.detail-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.detail-meta {
+  font-size: 12px;
+  color: #6b7280;
+  display: flex;
+  gap: 8px;
+}
+
+.detail-title-input {
+  width: 100%;
+  padding: 8px;
+  font-size: 16px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+/* 상세 탭 리스트 */
+.detail-tab-item {
+  background: white;
+  padding: 10px;
+  border-radius: 10px;
+  margin-bottom: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+.detail-tab-title {
+  font-size: 14px;
+  font-weight: 600;
+  flex: 1;
+}
+
+.detail-tab-open-btn,
+.detail-tab-delete-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+}

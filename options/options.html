@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>Tab Memo Saver - 옵션</title>
+  <link rel="stylesheet" href="options.css" />
+</head>
+<body>
+
+  <h1>환경 설정</h1>
+
+  <!-- 자동 저장 설정 -->
+  <section class="section">
+    <h2>자동 저장</h2>
+
+    <label class="row">
+      <span>자동 저장 사용</span>
+      <input type="checkbox" id="auto-save-toggle" />
+    </label>
+
+  </section>
+
+  <!-- 자동 카테고리 분류 -->
+  <section class="section">
+    <h2>자동 카테고리 분류</h2>
+
+    <label class="row">
+      <span>도메인 기반 카테고리 자동 분류</span>
+      <input type="checkbox" id="auto-category-toggle" />
+    </label>
+
+  </section>
+
+  <!-- 자동 저장 예외 도메인 -->
+  <section class="section">
+    <h2>자동 저장 제외 도메인</h2>
+
+    <p class="desc">자동 저장할 때 저장에서 제외할 도메인을 입력하세요. (예: youtube.com)</p>
+
+    <textarea id="excluded-domains" placeholder="youtube.com&#10;instagram.com"></textarea>
+
+    <button id="save-btn" class="save-btn">저장하기</button>
+    <div id="status" class="status"></div>
+  </section>
+
+  <script src="options.js"></script>
+</body>
+</html>

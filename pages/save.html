@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>탭 세트 저장</title>
+  <link rel="stylesheet" href="save.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>탭 세트 저장</h1>
+    <p id="tab-count">현재 탭: 0개</p>
+
+    <label for="category">카테고리:</label>
+    <select id="category">
+        <option value="업무">업무</option>
+        <option value="개인">개인</option>
+        <option value="기타" selected>기타</option>
+    </select>
+    <label for="memo">메모 (선택):</label>
+    <textarea id="memo" rows="4" placeholder="예: 내일 회의 자료 정리용"></textarea>
+
+    <div class="buttons">
+      <button id="cancel-btn" class="secondary">취소</button>
+      <button id="save-btn">저장하기</button>
+    </div>
+  </div>
+
+  <script src="save.js"></script>
+</body>
+</html>

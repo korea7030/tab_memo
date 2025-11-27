@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "Tab Memo Saver",
+  "version": "1.0",
+  "description": "현재 창의 탭을 자동 저장하고, 세트로 정리하여 다시 열 수 있는 확장 프로그램입니다.",
+  "permissions": ["tabs", "storage", "windows"],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon_16x16.png",
+      "48": "icons/icon_48x48.png",
+      "128": "icons/icon_128x128.png"
+    }
+  },
+  "icons": {
+    "16": "icons/icon_16x16.png",
+    "48": "icons/icon_48x48.png",
+    "128": "icons/icon_128x128.png"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "options_page": "options/options.html"
+}

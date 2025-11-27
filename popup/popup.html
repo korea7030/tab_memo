@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>Tab Memo Saver</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="container">
+
+    <h1>Tab Memo Saver</h1>
+
+    <!-- 현재 창 저장 -->
+    <button id="save-current-tabs" class="default-btn">현재 창 탭 저장하기</button>
+
+    <!-- 검색 -->
+    <input id="search-input" class="search-bar" placeholder="검색 (메모/날짜/탭 제목/URL/도메인)" />
+
+    <!-- 카테고리 필터 -->
+    <div class="filter-bar">
+        <button class="filter-btn active" data-cat="all">전체</button>
+        <button class="filter-btn" data-cat="업무">업무</button>
+        <button class="filter-btn" data-cat="개인">개인</button>
+        <button class="filter-btn" data-cat="기타">기타</button>
+    </div>
+
+    <h2>저장된 세트</h2>
+
+    <div id="sets-list" class="sets-list"></div>
+
+    <div class="empty-message" id="empty-message">
+      아직 저장된 세트가 없습니다.
+    </div>
+
+    <!-- 병합 모드 버튼 -->
+    <button id="merge-mode-btn" class="default-btn merge-btn">세트 병합 모드</button>
+
+  </div>
+
+  <!-- 상세 보기 화면 -->
+  <div id="detail-view" class="detail-view hidden">
+    <button id="back-btn" class="back-btn">← 뒤로가기</button>
+
+    <div id="detail-header">
+      <div id="detail-title" class="detail-title"></div>
+      <div id="detail-meta" class="detail-meta"></div>
+    </div>
+
+    <h3>탭 목록</h3>
+    <div id="detail-tabs"></div>
+
+    <button id="open-selected" class="default-btn">선택한 탭 열기</button>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
