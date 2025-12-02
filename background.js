@@ -13,7 +13,7 @@ chrome.storage.sync.get(
   ["autoSave", "autoCategory", "excludedDomains"],
   (result) => {
     userOptions = {
-      autoSave: result.autoSave ?? true,
+      autoSave: result.autoSave ?? false,
       autoCategory: result.autoCategory ?? true,
       excludedDomains: result.excludedDomains || []
     };

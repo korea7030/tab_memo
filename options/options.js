@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
     chrome.storage.sync.get(
       ["autoSave", "autoCategory", "excludedDomains"],
       (result) => {
-        autoSaveToggle.checked = result.autoSave ?? true;
+        autoSaveToggle.checked = result.autoSave ?? false;
         autoCategoryToggle.checked = result.autoCategory ?? true;
         excludedDomainsEl.value = (result.excludedDomains || []).join("\n");
       }
