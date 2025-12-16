@@ -1,39 +1,26 @@
-document.addEventListener("DOMContentLoaded", () => {
+const DEFAULT_OPTIONS = {
+  autoSaveEnabled: true,
+  autoSaveTrigger: "session",
+  autoSaveIntervalMinutes: 10,
+  autoSaveMode: "single"
+};
 
-    const autoSaveToggle = document.getElementById("auto-save-toggle");
-    const autoCategoryToggle = document.getElementById("auto-category-toggle");
-    const excludedDomainsEl = document.getElementById("excluded-domains");
-    const saveBtn = document.getElementById("save-btn");
-    const statusEl = document.getElementById("status");
-  
-    // 저장된 설정 불러오기
-    chrome.storage.sync.get(
-      ["autoSave", "autoCategory", "excludedDomains"],
-      (result) => {
-        autoSaveToggle.checked = result.autoSave ?? false;
-        autoCategoryToggle.checked = result.autoCategory ?? true;
-        excludedDomainsEl.value = (result.excludedDomains || []).join("\n");
-      }
-    );
-  
-    // 저장 버튼 클릭
-    saveBtn.addEventListener("click", () => {
-      const excludedList = excludedDomainsEl.value
-        .split("\n")
-        .map(s => s.trim())
-        .filter(s => s.length > 0);
-  
-      chrome.storage.sync.set(
-        {
-          autoSave: autoSaveToggle.checked,
-          autoCategory: autoCategoryToggle.checked,
-          excludedDomains: excludedList
-        },
-        () => {
-          statusEl.textContent = "저장되었습니다.";
-          setTimeout(() => (statusEl.textContent = ""), 1500);
-        }
-      );
-    });
-  
+chrome.storage.local.get(["options"], (res) => {
+  const opt = { ...DEFAULT_OPTIONS, ...(res.options || {}) };
+
+  document.getElementById("enabled").checked = opt.autoSaveEnabled;
+  document.querySelector(`input[name="trigger"][value="${opt.autoSaveTrigger}"]`).checked = true;
+  document.querySelector(`input[name="mode"][value="${opt.autoSaveMode}"]`).checked = true;
+  document.getElementById("interval").value = opt.autoSaveIntervalMinutes;
+});
+
+document.body.addEventListener("change", () => {
+  chrome.storage.local.set({
+    options: {
+      autoSaveEnabled: document.getElementById("enabled").checked,
+      autoSaveTrigger: document.querySelector("input[name='trigger']:checked").value,
+      autoSaveMode: document.querySelector("input[name='mode']:checked").value,
+      autoSaveIntervalMinutes: Number(document.getElementById("interval").value || 10)
+    }
   });
+});

@@ -40,16 +40,21 @@
   <!-- 상세 보기 화면 -->
   <div id="detail-view" class="detail-view hidden">
     <button id="back-btn" class="back-btn">← 뒤로가기</button>
-
-    <div id="detail-header">
-      <div id="detail-title" class="detail-title"></div>
-      <div id="detail-meta" class="detail-meta"></div>
-    </div>
-
+  
+    <h2>세트 상세 보기</h2>
+  
+    <!-- 🔴 이거 반드시 필요 -->
+    <div id="detail-title" class="detail-title"></div>
+  
+    <!-- 🔴 이거 반드시 필요 -->
+    <div id="detail-info" class="detail-info"></div>
+  
     <h3>탭 목록</h3>
     <div id="detail-tabs"></div>
-
-    <button id="open-selected" class="default-btn">선택한 탭 열기</button>
+  
+    <button id="open-selected" class="default-btn">
+      선택한 탭 열기
+    </button>
   </div>
 
   <script src="popup.js"></script>

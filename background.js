@@ -1,152 +1,102 @@
-// =======================================
-//  사용자 옵션 저장 구조
-// =======================================
-
-let userOptions = {
-  autoSave: true,
-  autoCategory: true,
-  excludedDomains: []
+const DEFAULT_OPTIONS = {
+  autoSaveEnabled: true,
+  autoSaveTrigger: "session",
+  autoSaveIntervalMinutes: 10,
+  autoSaveMode: "single",
+  autoCategoryEnabled: true,
+  excludedUrlPrefixes: ["chrome://", "chrome-extension://"]
 };
 
-// 옵션 불러오기
-chrome.storage.sync.get(
-  ["autoSave", "autoCategory", "excludedDomains"],
-  (result) => {
-    userOptions = {
-      autoSave: result.autoSave ?? false,
-      autoCategory: result.autoCategory ?? true,
-      excludedDomains: result.excludedDomains || []
-    };
-  }
-);
+let lastSnapshotString = "";
 
-// 옵션 변경을 실시간 반영
-chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === "sync") {
-    if (changes.autoSave) userOptions.autoSave = changes.autoSave.newValue;
-    if (changes.autoCategory) userOptions.autoCategory = changes.autoCategory.newValue;
-    if (changes.excludedDomains) userOptions.excludedDomains = changes.excludedDomains.newValue;
-  }
-});
-
-// =======================================
-//  자동 저장을 위한 스냅샷 로직
-// =======================================
-
-let lastSavedSnapshot = "";
-
-// 확장/새탭 제외 필터링
-function filterExcludedTabs(tabs) {
-  return tabs.filter(t => {
-    if (!t.url || t.url.startsWith("chrome://")) return false;
-    if (t.url.startsWith("chrome-extension://")) return false;
-    if (t.url === "chrome://newtab/" || t.url === "chrome://new-tab-page/") return false;
-
-    // 사용자 옵션에 따른 제외 도메인
-    const domain = (() => {
-      try {
-        return new URL(t.url).hostname.replace("www.", "");
-      } catch {
-        return "";
-      }
-    })();
-
-    if (userOptions.excludedDomains.some(d => domain.includes(d))) {
-      return false;
+// --------------------
+// 옵션 초기화
+// --------------------
+function initOptions() {
+  chrome.storage.local.get(["options"], (res) => {
+    if (!res.options) {
+      chrome.storage.local.set({ options: DEFAULT_OPTIONS });
     }
-
-    return true;
   });
 }
 
-// 스냅샷 만들기
-function makeSnapshot(tabs) {
-  return JSON.stringify(tabs.map(t => ({
-    title: t.title,
-    url: t.url
-  })));
+function getOptions(cb) {
+  chrome.storage.local.get(["options"], (res) => {
+    cb({ ...DEFAULT_OPTIONS, ...(res.options || {}) });
+  });
 }
 
-// 자동 저장 실행
-function autoSaveTabs() {
-  if (!userOptions.autoSave) return;
+initOptions();
 
-  chrome.tabs.query({ currentWindow: true }, (tabs) => {
-    const filtered = filterExcludedTabs(tabs);
+// --------------------
+// 탭 스냅샷
+// --------------------
+async function getTabsSnapshot() {
+  const tabs = await chrome.tabs.query({ currentWindow: true });
 
-    const snapshot = makeSnapshot(filtered);
-
-    if (snapshot === lastSavedSnapshot) return;
-
-    lastSavedSnapshot = snapshot;
-
-    const simplifiedTabs = filtered.map(t => ({
+  return tabs
+    .filter(t =>
+      t.url &&
+      !DEFAULT_OPTIONS.excludedUrlPrefixes.some(p => t.url.startsWith(p))
+    )
+    .map(t => ({
       title: t.title,
       url: t.url,
       favicon: t.favIconUrl || ""
     }));
+}
 
-    chrome.storage.local.get(["sets"], (result) => {
-      const sets = result.sets || [];
+function makeSnapshotString(tabs) {
+  return JSON.stringify(tabs.map(t => t.url));
+}
+
+// --------------------
+// 자동 저장 실행
+// --------------------
+async function runAutoSave(trigger) {
+  getOptions(async (options) => {
+    if (!options.autoSaveEnabled) return;
+    if (options.autoSaveTrigger !== trigger) return;
+
+    const tabs = await getTabsSnapshot();
+    if (!tabs.length) return;
+
+    const snap = makeSnapshotString(tabs);
+    if (snap === lastSnapshotString) return;
+    lastSnapshotString = snap;
+
+    chrome.storage.local.get(["sets"], (res) => {
+      let sets = res.sets || [];
+
+      if (options.autoSaveMode === "single") {
+        sets = sets.filter(s => !s.isAuto);
+      }
 
       const now = new Date();
-      const dateStr =
-        `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")}` +
-        ` ${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
+      const date =
+        `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}-${String(now.getDate()).padStart(2,"0")} `
+        + `${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}`;
 
-      const category = userOptions.autoCategory
-        ? detectCategory(simplifiedTabs)
-        : "기타";
-
-      const newSet = {
+      sets.push({
         id: now.getTime(),
         title: "자동 저장 세트",
-        date: dateStr,
+        date,
         memo: "",
-        category,
-        tabs: simplifiedTabs
-      };
+        category: "기타",
+        tabs,
+        isAuto: true
+      });
 
-      sets.push(newSet);
       chrome.storage.local.set({ sets });
     });
   });
 }
 
-// =======================================
-//  자동 카테고리 분류
-// =======================================
-function detectCategory(tabs) {
-  const urls = tabs.map(t => t.url);
+// --------------------
+// 이벤트 연결
+// --------------------
+chrome.windows.onRemoved.addListener(() => runAutoSave("session"));
+chrome.tabs.onCreated.addListener(() => runAutoSave("change"));
+chrome.tabs.onRemoved.addListener(() => runAutoSave("change"));
 
-  if (urls.some(u => u.includes("notion") || u.includes("github") || u.includes("google.com"))) {
-    return "업무";
-  }
-  if (urls.some(u => u.includes("youtube") || u.includes("instagram") || u.includes("naver"))) {
-    return "개인";
-  }
-  return "기타";
-}
-
-// =======================================
-//  탭 이벤트 감지
-// =======================================
-
-chrome.tabs.onCreated.addListener(autoSaveTabs);
-chrome.tabs.onRemoved.addListener(autoSaveTabs);
-
-// 창 닫기 감지
-chrome.windows.onRemoved.addListener(autoSaveTabs);
-
-// =======================================
-//  썸네일 캡처 (상세 페이지에서 사용)
-// =======================================
-
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
-  if (msg.action === "capture") {
-    chrome.tabs.captureVisibleTab(null, { format: "jpeg", quality: 40 }, (dataUrl) => {
-      sendResponse({ thumbnail: dataUrl });
-    });
-    return true;
-  }
-});
+setInterval(() => runAutoSave("interval"), 60 * 1000);

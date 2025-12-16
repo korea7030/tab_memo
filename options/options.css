@@ -1,64 +1,70 @@
+@charset "UTF-8";
+/* 전체 레이아웃 */
 body {
-    font-family: system-ui, Arial, sans-serif;
-    margin: 0;
-    padding: 20px;
-    background: #fafafa;
-  }
-  
-  h1 {
-    font-size: 22px;
-    margin-bottom: 20px;
-  }
-  
-  .section {
-    background: white;
-    padding: 16px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    border: 1px solid #e5e7eb;
-  }
-  
-  h2 {
-    margin-top: 0;
-    font-size: 16px;
-    margin-bottom: 12px;
-  }
-  
-  .row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  textarea {
-    width: 100%;
-    height: 100px;
-    margin-top: 10px;
-    padding: 10px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
-    resize: vertical;
-    font-family: inherit;
-  }
-  
-  .save-btn {
-    margin-top: 12px;
-    padding: 10px;
-    width: 100%;
-    background: #2563eb;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 14px;
-  }
-  
-  .save-btn:hover {
-    background: #1d4ed8;
-  }
-  
-  .status {
-    margin-top: 8px;
-    font-size: 12px;
-    color: #10b981;
-  }
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    "Apple SD Gothic Neo",
+    "Noto Sans KR",
+    "Malgun Gothic",
+    Arial,
+    sans-serif;
+  background: #f5f6f8;
+  margin: 0;
+  padding: 24px;
+  color: #111;
+}
+
+h1 {
+  font-size: 20px;
+  margin-bottom: 20px;
+}
+
+h2 {
+  font-size: 14px;
+  margin: 20px 0 10px;
+  color: #374151;
+}
+
+/* 카드 섹션 */
+.section {
+  background: #fff;
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+/* 라벨 공통 */
+label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+
+/* 체크박스 / 라디오 */
+input[type="checkbox"],
+input[type="radio"] {
+  width: 16px;
+  height: 16px;
+}
+
+/* interval 입력 */
+input[type="number"] {
+  width: 60px;
+  padding: 4px 6px;
+  margin-left: 6px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+}
+
+/* 설명 텍스트 */
+.helper {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 6px;
+}

@@ -216,6 +216,16 @@ h2 {
   position: relative;
 }
 
+/* 상세 탭 목록 favicon 크기 고정 */
+.detail-tab-item img {
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+  object-fit: contain;
+  border-radius: 4px;
+}
+
 .detail-tab-title {
   font-size: 14px;
   font-weight: 600;
@@ -228,4 +238,21 @@ h2 {
   border: none;
   cursor: pointer;
   font-size: 14px;
+}
+/* 자동 저장 세트 카드 톤 다운 */
+.set-item.auto {
+  opacity: 0.85;
+  background-color: #f9fafb;
+}
+
+/* 자동 저장 배지 */
+.auto-badge {
+  margin-top: 6px;
+  display: inline-block;
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 6px;
+  background: #e5e7eb;
+  color: #374151;
+  width: fit-content;
 }

@@ -1,48 +1,50 @@
-<!DOCTYPE html>
-<html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>Tab Memo Saver - 옵션</title>
+  <title>자동 저장 설정</title>
   <link rel="stylesheet" href="options.css" />
 </head>
-<body>
 
-  <h1>환경 설정</h1>
+<div class="section">
+  <label>
+    <input type="checkbox" id="enabled" />
+    자동 저장 사용
+  </label>
+</div>
 
-  <!-- 자동 저장 설정 -->
-  <section class="section">
-    <h2>자동 저장</h2>
+<div class="section">
+  <h2>자동 저장 시점</h2>
 
-    <label class="row">
-      <span>자동 저장 사용</span>
-      <input type="checkbox" id="auto-save-toggle" />
-    </label>
+  <label>
+    <input type="radio" name="trigger" value="session" />
+    모든 창 종료 시
+  </label>
 
-  </section>
+  <label>
+    <input type="radio" name="trigger" value="change" />
+    탭 변경 시
+  </label>
 
-  <!-- 자동 카테고리 분류 -->
-  <section class="section">
-    <h2>자동 카테고리 분류</h2>
+  <label>
+    <input type="radio" name="trigger" value="interval" />
+    일정 시간마다
+    <input type="number" id="interval" /> 분
+  </label>
 
-    <label class="row">
-      <span>도메인 기반 카테고리 자동 분류</span>
-      <input type="checkbox" id="auto-category-toggle" />
-    </label>
+  <div class="helper">
+    자동 저장이 언제 실행될지 선택합니다.
+  </div>
+</div>
 
-  </section>
+<div class="section">
+  <h2>저장 방식</h2>
 
-  <!-- 자동 저장 예외 도메인 -->
-  <section class="section">
-    <h2>자동 저장 제외 도메인</h2>
+  <label>
+    <input type="radio" name="mode" value="single" />
+    최신 1개만 유지
+  </label>
 
-    <p class="desc">자동 저장할 때 저장에서 제외할 도메인을 입력하세요. (예: youtube.com)</p>
-
-    <textarea id="excluded-domains" placeholder="youtube.com&#10;instagram.com"></textarea>
-
-    <button id="save-btn" class="save-btn">저장하기</button>
-    <div id="status" class="status"></div>
-  </section>
-
-  <script src="options.js"></script>
-</body>
-</html>
+  <label>
+    <input type="radio" name="mode" value="multiple" />
+    기록처럼 저장
+  </label>
+</div>
