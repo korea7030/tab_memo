@@ -256,3 +256,16 @@ h2 {
   color: #374151;
   width: fit-content;
 }
+
+.detail-memo {
+  cursor: pointer;
+  color: #374151;
+}
+
+.detail-memo-input {
+  width: 100%;
+  padding: 6px;
+  font-size: 13px;
+  border-radius: 6px;
+  border: 1px solid #ddd;
+}
