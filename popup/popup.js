@@ -12,17 +12,23 @@ document.addEventListener("DOMContentLoaded", () => {
   const backBtn = document.getElementById("back-btn");
   const openSelectedBtn = document.getElementById("open-selected");
 
-  // (popup.html에 존재해야 함)
   const searchInput = document.getElementById("search-input");
   const filterButtons = document.querySelectorAll(".filter-btn");
+
+  // merge
+  const mergeBtn = document.getElementById("merge-mode-btn");
 
   // =========================
   // State
   // =========================
   let currentSet = null;
   let selectedTabIndexes = new Set();
+
   let currentFilter = "all";
   let searchKeyword = "";
+
+  let mergeMode = false;
+  let mergeSelectedIds = new Set();
 
   // =========================
   // Init Events
@@ -39,6 +45,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const urls = [...selectedTabIndexes]
       .map(i => currentSet.tabs?.[i]?.url)
       .filter(Boolean);
+
     if (urls.length) chrome.windows.create({ url: urls });
   });
 
@@ -64,6 +71,32 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  // 병합 모드 버튼
+  mergeBtn?.addEventListener("click", async () => {
+    if (!mergeMode) {
+      // 병합 모드 진입
+      mergeMode = true;
+      mergeSelectedIds.clear();
+      mergeBtn.textContent = "병합 실행";
+      loadSets();
+      return;
+    }
+
+    // 병합 실행
+    if (mergeSelectedIds.size < 2) {
+      alert("병합할 세트를 2개 이상 선택하세요.");
+      return;
+    }
+
+    await mergeSets([...mergeSelectedIds]);
+
+    // 병합 모드 종료
+    mergeMode = false;
+    mergeSelectedIds.clear();
+    mergeBtn.textContent = "세트 병합 모드";
+    loadSets();
+  });
+
   // =========================
   // Utils
   // =========================
@@ -86,6 +119,24 @@ document.addEventListener("DOMContentLoaded", () => {
     return "기타";
   }
 
+  function nowDateString() {
+    const now = new Date();
+    const yyyy = now.getFullYear();
+    const mm = String(now.getMonth() + 1).padStart(2, "0");
+    const dd = String(now.getDate()).padStart(2, "0");
+    const hh = String(now.getHours()).padStart(2, "0");
+    const mi = String(now.getMinutes()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd} ${hh}:${mi}`;
+  }
+
+  function isSavableUrl(url) {
+    if (!url) return false;
+    if (url.startsWith("chrome://")) return false;
+    if (url.startsWith("chrome-extension://")) return false;
+    if (url === "chrome://newtab/") return false;
+    return true;
+  }
+
   // =========================
   // Load Sets (필터 + 검색)
   // =========================
@@ -99,7 +150,7 @@ document.addEventListener("DOMContentLoaded", () => {
         sets = sets.filter(s => safeCategory(s.category) === currentFilter);
       }
 
-      // 2) 검색 (메모/날짜/세트제목/탭제목/URL/도메인)
+      // 2) 검색 (세트 제목/메모/날짜/카테고리 + 탭제목/URL/도메인)
       if (searchKeyword) {
         sets = sets.filter(s => {
           const title = (s.title || "").toLowerCase();
@@ -141,8 +192,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const item = document.createElement("div");
         item.className = "set-item";
-        // CSS에 .set-item.category-업무 같은게 있으면 이게 필요함
         item.classList.add(`category-${category}`);
+
+        // 병합 모드 체크박스
+        if (mergeMode) {
+          const check = document.createElement("input");
+          check.type = "checkbox";
+          check.className = "merge-checkbox";
+          check.checked = mergeSelectedIds.has(set.id);
+
+          check.addEventListener("click", (e) => {
+            // ✅ 체크만 할 때 상세로 이동 방지
+            e.stopPropagation();
+          });
+
+          check.addEventListener("change", (e) => {
+            if (e.target.checked) mergeSelectedIds.add(set.id);
+            else mergeSelectedIds.delete(set.id);
+          });
+
+          item.prepend(check);
+        }
 
         const header = document.createElement("div");
         header.className = "set-item-header";
@@ -180,7 +250,6 @@ document.addEventListener("DOMContentLoaded", () => {
         catEl.textContent = `카테고리: ${category}`;
         item.append(catEl);
 
-        // 자동 저장 배지 (css에 .auto-badge 있으면 표시됨)
         if (set.auto) {
           item.classList.add("auto");
           const badge = document.createElement("div");
@@ -189,7 +258,12 @@ document.addEventListener("DOMContentLoaded", () => {
           item.append(badge);
         }
 
-        item.addEventListener("click", () => showDetail(set));
+        item.addEventListener("click", () => {
+          // 병합 모드일 때는 상세 이동 막고 싶으면 여기서 return 처리 가능
+          // if (mergeMode) return;
+          showDetail(set);
+        });
+
         setsListEl.append(item);
       });
     });
@@ -202,10 +276,8 @@ document.addEventListener("DOMContentLoaded", () => {
     currentSet = set;
     selectedTabIndexes.clear();
 
-    // 제목/메모/정보 렌더
     renderDetailHeader(set);
 
-    // 탭 목록
     detailTabsEl.innerHTML = "";
     (set.tabs || []).forEach((tab, i) => {
       const row = document.createElement("div");
@@ -219,7 +291,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <button class="detail-tab-delete-btn" title="세트에서 삭제">❌</button>
       `;
 
-      // 기본 전체 선택
+      // ✅ 기본 전체 선택
       selectedTabIndexes.add(i);
 
       const checkbox = row.querySelector("input");
@@ -249,15 +321,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function renderDetailHeader(set) {
-    // detailTitleEl은 replaceWith로 바뀔 수 있으니 항상 새로 잡는다
+    // ✅ replaceWith 때문에 레퍼런스 끊기므로 항상 다시 잡기
     const titleHost = document.getElementById("detail-title");
     if (!titleHost) return;
 
-    // 1) 제목(클릭 편집)
     titleHost.textContent = set.title || "제목 없음";
     titleHost.onclick = () => startEditTitle(set.id, titleHost, set.title || "");
 
-    // 2) info 영역(날짜/메모/카테고리/탭수)
     detailInfoEl.innerHTML = "";
 
     const dateRow = createInfoRow("날짜", set.date || "");
@@ -269,10 +339,8 @@ document.addEventListener("DOMContentLoaded", () => {
     memoRow.textContent = set.memo ? `메모: ${set.memo}` : "메모: (메모 없음)";
     memoRow.style.cursor = "pointer";
     memoRow.title = "클릭해서 메모 수정";
-
     memoRow.onclick = () => startEditMemo(set.id, memoRow, set.memo || "");
 
-    // 자동 저장 안내
     if (set.auto) {
       const autoInfo = document.createElement("div");
       autoInfo.className = "auto-info";
@@ -304,7 +372,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const finish = () => {
       const newTitle = input.value.trim() || "제목 없음";
       updateSet(setId, { title: newTitle }, (updatedSet) => {
-        // 원복(중요)
+        // ✅ CSS 원복 포함해서 다시 title div로 복구
         const restored = document.createElement("div");
         restored.id = "detail-title";
         restored.className = "detail-title";
@@ -313,7 +381,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         input.replaceWith(restored);
 
-        // 상세 정보도 최신 데이터로 다시 그림(메모/카테고리/탭수 표시 유지)
         if (updatedSet) {
           currentSet = updatedSet;
           renderDetailHeader(updatedSet);
@@ -325,7 +392,6 @@ document.addEventListener("DOMContentLoaded", () => {
     input.addEventListener("keydown", (e) => {
       if (e.key === "Enter") finish();
       if (e.key === "Escape") {
-        // 취소 -> 원복
         const restored = document.createElement("div");
         restored.id = "detail-title";
         restored.className = "detail-title";
@@ -349,9 +415,8 @@ document.addEventListener("DOMContentLoaded", () => {
     textarea.select();
 
     const finish = () => {
-      const newMemo = textarea.value.trim(); // 빈 값 허용
+      const newMemo = textarea.value.trim(); // 빈값 허용
       updateSet(setId, { memo: newMemo }, (updatedSet) => {
-        // 원복(중요)
         const restored = document.createElement("div");
         restored.className = "detail-memo";
         restored.style.cursor = "pointer";
@@ -363,7 +428,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (updatedSet) {
           currentSet = updatedSet;
-          // 메모만 바뀌어도 info 영역 정합성 유지 위해 갱신
           renderDetailHeader(updatedSet);
         }
       });
@@ -372,7 +436,6 @@ document.addEventListener("DOMContentLoaded", () => {
     textarea.addEventListener("blur", finish);
     textarea.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
-        // 취소 -> 원복
         const restored = document.createElement("div");
         restored.className = "detail-memo";
         restored.style.cursor = "pointer";
@@ -381,6 +444,8 @@ document.addEventListener("DOMContentLoaded", () => {
         restored.onclick = () => startEditMemo(setId, restored, initialValue);
         textarea.replaceWith(restored);
       }
+      // Enter로 저장하고 싶으면 아래 주석 해제 (textarea는 보통 줄바꿈이라 blur 저장이 더 자연스러움)
+      // if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) finish();
     });
   }
 
@@ -423,17 +488,55 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // =========================
+  // Merge Sets
+  // =========================
+  async function mergeSets(ids) {
+    return new Promise((resolve) => {
+      chrome.storage.local.get(["sets"], (res) => {
+        let sets = Array.isArray(res.sets) ? res.sets : [];
+
+        const targets = sets.filter(s => ids.includes(s.id));
+        if (targets.length < 2) {
+          alert("병합할 세트를 2개 이상 선택하세요.");
+          return resolve();
+        }
+
+        // 탭 합치기 + URL 중복 제거
+        let mergedTabs = [];
+        targets.forEach(s => mergedTabs = mergedTabs.concat(s.tabs || []));
+
+        const uniqueTabs = Array.from(
+          new Map(mergedTabs.map(t => [t.url, t])).values()
+        );
+
+        const mergedSet = {
+          id: Date.now(),
+          title: "병합된 세트",
+          date: nowDateString(),
+          memo: "",
+          category: "기타",
+          tabs: uniqueTabs
+        };
+
+        // 기존 제거 후 merged 추가
+        sets = sets.filter(s => !ids.includes(s.id));
+        sets.push(mergedSet);
+
+        chrome.storage.local.set({ sets }, () => {
+          alert("세트 병합 완료!");
+          resolve();
+        });
+      });
+    });
+  }
+
+  // =========================
   // Save current tabs
   // =========================
   function handleSaveCurrentTabs() {
     chrome.tabs.query({ currentWindow: true }, (tabs) => {
       const simplified = (tabs || [])
-        .filter(t =>
-          t.url &&
-          !t.url.startsWith("chrome://") &&
-          !t.url.startsWith("chrome-extension://") &&
-          t.url !== "chrome://newtab/"
-        )
+        .filter(t => isSavableUrl(t.url))
         .map(t => ({
           title: t.title,
           url: t.url,
@@ -444,12 +547,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
       chrome.storage.local.get(["sets"], (res) => {
         const sets = Array.isArray(res.sets) ? res.sets : [];
-        const now = new Date();
-
         sets.push({
-          id: now.getTime(),
+          id: Date.now(),
           title: "수동 저장 세트",
-          date: now.toLocaleString(),
+          date: nowDateString(),
           memo: "",
           category,
           tabs: simplified
